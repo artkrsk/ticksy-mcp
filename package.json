@@ -2,9 +2,16 @@
   "name": "ticksy-mcp",
   "version": "1.0.0",
   "description": "MCP server for Ticksy support ticket API",
+  "author": "Artem Semkin",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "ticksy-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",

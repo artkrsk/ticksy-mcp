@@ -39,8 +39,8 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 {
   "mcpServers": {
     "ticksy": {
-      "command": "node",
-      "args": ["/absolute/path/to/ticksy-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "ticksy-mcp"],
       "env": {
         "TICKSY_DOMAIN": "your-domain",
         "TICKSY_API_KEY": "your-api-key"
@@ -58,7 +58,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 claude mcp add ticksy \
   -e TICKSY_DOMAIN=your-domain \
   -e TICKSY_API_KEY=your-api-key \
-  -- node /absolute/path/to/ticksy-mcp/dist/index.js
+  -- npx -y ticksy-mcp
 ```
 </details>
 
@@ -71,8 +71,8 @@ Add to `.vscode/mcp.json` (VS Code) or `.cursor/mcp.json` (Cursor) in your proje
 {
   "servers": {
     "ticksy": {
-      "command": "node",
-      "args": ["/absolute/path/to/ticksy-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "ticksy-mcp"],
       "env": {
         "TICKSY_DOMAIN": "your-domain",
         "TICKSY_API_KEY": "your-api-key"
@@ -86,6 +86,8 @@ Add to `.vscode/mcp.json` (VS Code) or `.cursor/mcp.json` (Cursor) in your proje
 ## Build from source
 
 ```bash
+git clone https://github.com/artkrsk/ticksy-mcp.git
+cd ticksy-mcp
 pnpm install
 pnpm build
 ```
