@@ -55,7 +55,7 @@ const TICKET_ID_SCHEMA = {
 server.registerTool(
   'list_open_tickets',
   {
-    description: 'List open support tickets, each with embedded comments.',
+    description: 'List open tickets (summary). Use get_ticket for full details.',
     inputSchema: {
       needs_response_only: z
         .boolean()
@@ -69,7 +69,7 @@ server.registerTool(
 
 server.registerTool(
   'list_closed_tickets',
-  { description: 'List the most recently closed support tickets.' },
+  { description: 'List recently closed tickets (summary). Use get_ticket for full details.' },
   async () => run(() => listClosedTickets()),
 )
 
@@ -93,7 +93,7 @@ server.registerTool(
 
 server.registerTool(
   'list_my_tickets',
-  { description: 'List open tickets assigned to the authenticated agent.' },
+  { description: 'List your assigned open tickets (summary). Use get_ticket for full details.' },
   async () => run(() => listMyTickets()),
 )
 

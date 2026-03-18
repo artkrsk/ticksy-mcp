@@ -65,6 +65,22 @@ function decodeComment(comment: TicketComment): TicketComment {
   return { ...comment, body: htmlDecode(comment.comment) }
 }
 
+function summarizeTicket(ticket: Ticket): Partial<Ticket> {
+  return {
+    ticket_id: ticket.ticket_id,
+    ticket_title: ticket.ticket_title,
+    status: ticket.status,
+    needs_response: ticket.needs_response,
+    starred: ticket.starred,
+    ticket_type: ticket.ticket_type,
+    user_name: ticket.user_name,
+    user_email: ticket.user_email,
+    assigned_to_name: ticket.assigned_to_name,
+    elapsed_time: ticket.elapsed_time,
+    time_stamp: ticket.time_stamp,
+  }
+}
+
 function decodeTicket(ticket: Ticket): Ticket {
   return {
     ...ticket,
@@ -92,15 +108,16 @@ async function post(action: string, params: Record<string, string> = {}): Promis
 
 // ── API calls ──────────────────────────────────────────────────
 
-export async function listOpenTickets(needsResponseOnly = false): Promise<Ticket[]> {
+export async function listOpenTickets(needsResponseOnly = false): Promise<Partial<Ticket>[]> {
   const data = await get<{ 'open-tickets': Ticket[] }>('open-tickets.json')
-  const tickets = (data['open-tickets'] ?? []).map(decodeTicket)
-  return needsResponseOnly ? tickets.filter(t => t.needs_response === '1') : tickets
+  const tickets = data['open-tickets'] ?? []
+  const filtered = needsResponseOnly ? tickets.filter(t => t.needs_response === '1') : tickets
+  return filtered.map(summarizeTicket)
 }
 
-export async function listClosedTickets(): Promise<Ticket[]> {
+export async function listClosedTickets(): Promise<Partial<Ticket>[]> {
   const data = await get<{ 'closed-tickets': Ticket[] }>('closed-tickets.json')
-  return (data['closed-tickets'] ?? []).map(decodeTicket)
+  return (data['closed-tickets'] ?? []).map(summarizeTicket)
 }
 
 export async function getTicket(ticketId: string): Promise<{ data: Ticket; comments: TicketComment[] }> {
@@ -116,9 +133,9 @@ export async function getTicketComments(ticketId: string): Promise<TicketComment
   return (data.ticket_comments ?? []).map(decodeComment)
 }
 
-export async function listMyTickets(): Promise<Ticket[]> {
+export async function listMyTickets(): Promise<Partial<Ticket>[]> {
   const data = await get<{ 'my-tickets': Ticket[] }>('my-tickets.json')
-  return (data['my-tickets'] ?? []).map(decodeTicket)
+  return (data['my-tickets'] ?? []).map(summarizeTicket)
 }
 
 export async function countResponsesNeeded(): Promise<number> {
