@@ -42,6 +42,7 @@ export interface Ticket {
   assigned_to: string
   assigned_to_email: string
   category_id: string
+  category_name?: string
   related_url: string
   // list-only fields (present in open/closed-tickets.json, absent in ticket.json)
   ticket_id?: string
@@ -73,11 +74,13 @@ function summarizeTicket(ticket: Ticket): Partial<Ticket> {
     needs_response: ticket.needs_response,
     starred: ticket.starred,
     ticket_type: ticket.ticket_type,
+    category_name: ticket.category_name,
     user_name: ticket.user_name,
     user_email: ticket.user_email,
     assigned_to_name: ticket.assigned_to_name,
     elapsed_time: ticket.elapsed_time,
     time_stamp: ticket.time_stamp,
+    envato_purchase_code: ticket.envato_purchase_code,
   }
 }
 
@@ -106,24 +109,54 @@ async function post(action: string, params: Record<string, string> = {}): Promis
   return res.json()
 }
 
+// ── Categories (cached) ─────────────────────────────────────────
+
+interface Category {
+  category_id: string
+  category_name: string
+}
+
+let categoryCache: Record<string, string> | null = null
+
+async function getCategories(): Promise<Record<string, string>> {
+  if (categoryCache) { return categoryCache }
+  const data = await get<Record<string, Category>>('categories.json')
+  categoryCache = {}
+  for (const val of Object.values(data)) {
+    if (val && typeof val === 'object' && val.category_id && val.category_name) {
+      categoryCache[val.category_id] = val.category_name
+    }
+  }
+  return categoryCache
+}
+
+async function resolveCategoryName(ticket: Ticket): Promise<Ticket> {
+  if (!ticket.category_id) { return ticket }
+  const categories = await getCategories()
+  return { ...ticket, category_name: categories[ticket.category_id] }
+}
+
 // ── API calls ──────────────────────────────────────────────────
 
 export async function listOpenTickets(needsResponseOnly = false): Promise<Partial<Ticket>[]> {
   const data = await get<{ 'open-tickets': Ticket[] }>('open-tickets.json')
-  const tickets = data['open-tickets'] ?? []
+  const categories = await getCategories()
+  const tickets = (data['open-tickets'] ?? []).map(t => ({ ...t, category_name: categories[t.category_id] }))
   const filtered = needsResponseOnly ? tickets.filter(t => t.needs_response === '1') : tickets
   return filtered.map(summarizeTicket)
 }
 
 export async function listClosedTickets(): Promise<Partial<Ticket>[]> {
+  const categories = await getCategories()
   const data = await get<{ 'closed-tickets': Ticket[] }>('closed-tickets.json')
-  return (data['closed-tickets'] ?? []).map(summarizeTicket)
+  return (data['closed-tickets'] ?? []).map(t => summarizeTicket({ ...t, category_name: categories[t.category_id] }))
 }
 
 export async function getTicket(ticketId: string): Promise<{ data: Ticket; comments: TicketComment[] }> {
   const raw = await get<{ 'ticket-data': Ticket; 'ticket-comments': TicketComment[] }>(`ticket.json/${ticketId}`)
+  const enriched = await resolveCategoryName(decodeTicket(raw['ticket-data']))
   return {
-    data: decodeTicket(raw['ticket-data']),
+    data: enriched,
     comments: (raw['ticket-comments'] ?? []).map(decodeComment),
   }
 }
@@ -134,8 +167,9 @@ export async function getTicketComments(ticketId: string): Promise<TicketComment
 }
 
 export async function listMyTickets(): Promise<Partial<Ticket>[]> {
+  const categories = await getCategories()
   const data = await get<{ 'my-tickets': Ticket[] }>('my-tickets.json')
-  return (data['my-tickets'] ?? []).map(summarizeTicket)
+  return (data['my-tickets'] ?? []).map(t => summarizeTicket({ ...t, category_name: categories[t.category_id] }))
 }
 
 export async function countResponsesNeeded(): Promise<number> {
