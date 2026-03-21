@@ -1,4 +1,4 @@
-# ticksy-mcp
+# @artemsemkin/ticksy-mcp
 
 MCP server for the [Ticksy](https://ticksy.com) support ticket API. Gives AI agents full read and write access to your support tickets.
 
@@ -40,7 +40,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
   "mcpServers": {
     "ticksy": {
       "command": "npx",
-      "args": ["-y", "ticksy-mcp"],
+      "args": ["-y", "@artemsemkin/ticksy-mcp"],
       "env": {
         "TICKSY_DOMAIN": "your-domain",
         "TICKSY_API_KEY": "your-api-key"
@@ -58,7 +58,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 claude mcp add ticksy \
   -e TICKSY_DOMAIN=your-domain \
   -e TICKSY_API_KEY=your-api-key \
-  -- npx -y ticksy-mcp
+  -- npx -y @artemsemkin/ticksy-mcp
 ```
 </details>
 
@@ -72,7 +72,7 @@ Add to `.vscode/mcp.json` (VS Code) or `.cursor/mcp.json` (Cursor) in your proje
   "servers": {
     "ticksy": {
       "command": "npx",
-      "args": ["-y", "ticksy-mcp"],
+      "args": ["-y", "@artemsemkin/ticksy-mcp"],
       "env": {
         "TICKSY_DOMAIN": "your-domain",
         "TICKSY_API_KEY": "your-api-key"
@@ -86,8 +86,8 @@ Add to `.vscode/mcp.json` (VS Code) or `.cursor/mcp.json` (Cursor) in your proje
 ## Build from source
 
 ```bash
-git clone https://github.com/artkrsk/ticksy-mcp.git
-cd ticksy-mcp
+git clone https://github.com/artkrsk/@artemsemkin/ticksy-mcp.git
+cd @artemsemkin/ticksy-mcp
 pnpm install
 pnpm build
 ```
