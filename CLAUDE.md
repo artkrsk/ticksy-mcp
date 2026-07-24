@@ -12,17 +12,17 @@ An MCP (Model Context Protocol) server that wraps the Ticksy support ticket API.
 pnpm build        # compile TypeScript to dist/
 pnpm dev          # watch mode (tsc --watch)
 pnpm start        # run compiled server (node dist/index.js)
-pnpm exec tsc     # type-check without emitting
+pnpm exec tsc --noEmit  # type-check without emitting
 ```
 
 No test framework is configured.
 
 ## Architecture
 
-Three source files, all in `src/`:
+Source files, all in `src/`:
 
-- **index.ts** — MCP server setup. Validates env vars, registers 7 read tools (list/get tickets, comments, counts) and 8 write tools (reply, note, close, reopen, star, read status, create customer), connects via `StdioServerTransport`. Uses a `run()` helper for uniform result/error formatting. Simple single-ID write tools are registered via a `SIMPLE_WRITE_TOOLS` loop.
-- **ticksy.ts** — Ticksy REST API client. Builds base URL from `TICKSY_DOMAIN` and `TICKSY_API_KEY` env vars. Exports 11 async functions — `get()` helper for reads, `post()` helper for writes. Defines `Ticket` and `TicketComment` interfaces. Decodes HTML-encoded comment bodies into plain text via `utils.html()`.
+- **index.ts** — MCP server setup. Validates env vars, registers read tools (list/get tickets, comments, counts) and write tools (reply, note, close, reopen, star, read status, create customer), connects via `StdioServerTransport`. Uses a `run()` helper for uniform result/error formatting. Simple single-ID write tools are registered via a `SIMPLE_WRITE_TOOLS` loop.
+- **ticksy.ts** — Ticksy REST API client. Builds base URL from `TICKSY_DOMAIN` and `TICKSY_API_KEY` env vars. Exports one async function per Ticksy operation — `get()` helper for reads, `post()` helper for writes. Defines `Ticket` and `TicketComment` interfaces. Decodes HTML-encoded comment bodies into plain text via `utils.html()`.
 - **utils.ts** — Single `html()` function that decodes HTML entities and strips tags from Ticksy's HTML-encoded comment strings.
 
 ## Key Details

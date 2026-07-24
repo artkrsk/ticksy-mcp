@@ -1,5 +1,5 @@
 /**
- * Decode HTML entities in a string.
+ * Convert an HTML-encoded string to plain text.
  * Ticksy returns comment bodies as HTML-encoded strings.
  */
 export function html(encoded: string): string {
