@@ -14,3 +14,5 @@ permissions:
 jobs:
   release:
     uses: artkrsk/github-actions/.github/workflows/npm-publish.yml@v1
+    with:
+      pnpm-version: latest
