@@ -32,3 +32,5 @@ Source files, all in `src/`:
 - API responses use hyphenated keys (`open-tickets`, `ticket-data`, `ticket-comments`).
 - Boolean-like fields from Ticksy come as `'0'` / `'1'` strings, not actual booleans.
 - Requires `TICKSY_DOMAIN` and `TICKSY_API_KEY` environment variables (see `.env.example`).
+- `ticket.json` has no customer fields; `getTicket` copies `user_name`, `user_email`, `envato_purchase_code` and the parsed `envato_verified_string` (as `envato_verified`) from the open or closed list when the ticket is listed there (two extra list fetches at most).
+- Releases: bump `version` in `package.json` on `master`; `publish.yml` tags `v<version>` and publishes to npm. A run that fails after tagging blocks that version forever (later runs see the tag and skip), so bump again rather than re-run.

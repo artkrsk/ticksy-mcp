@@ -54,13 +54,36 @@ export interface Ticket {
   response_time?: string
   envato_purchase_code?: string
   envato_verified_string?: string
+  envato_verified?: EnvatoVerified
   ticket_comments?: TicketComment[]
   // detail-only fields (present in ticket.json, absent in list endpoints)
   opened_by_me?: '0' | '1'
   unsubscribed?: '0' | '1'
 }
 
+/** Parsed `envato_verified_string`: the Envato purchase Ticksy verified when the ticket was opened. */
+export interface EnvatoVerified {
+  item_name?: string
+  item_id?: number
+  buyer?: string
+  licence?: string
+  created_at?: string
+  supported_until?: string
+  shop_type?: string
+}
+
 // ── Helpers ────────────────────────────────────────────────────
+
+/** Parse the JSON string Ticksy stores; the purchase code is left out (it is `envato_purchase_code`). */
+function parseEnvatoVerified(raw?: string): EnvatoVerified | undefined {
+  if (!raw) { return undefined }
+  try {
+    const { purchase_code: _code, ...rest } = JSON.parse(raw) as EnvatoVerified & { purchase_code?: string }
+    return rest
+  } catch {
+    return undefined
+  }
+}
 
 function decodeComment(comment: TicketComment): TicketComment {
   return { ...comment, body: htmlDecode(comment.comment) }
@@ -75,12 +98,14 @@ function summarizeTicket(ticket: Ticket): Partial<Ticket> {
     starred: ticket.starred,
     ticket_type: ticket.ticket_type,
     category_name: ticket.category_name,
+    related_url: ticket.related_url,
     user_name: ticket.user_name,
     user_email: ticket.user_email,
     assigned_to_name: ticket.assigned_to_name,
     elapsed_time: ticket.elapsed_time,
     time_stamp: ticket.time_stamp,
     envato_purchase_code: ticket.envato_purchase_code,
+    envato_verified: parseEnvatoVerified(ticket.envato_verified_string),
   }
 }
 
@@ -156,8 +181,25 @@ export async function getTicket(ticketId: string): Promise<{ data: Ticket; comme
   const raw = await get<{ 'ticket-data': Ticket; 'ticket-comments': TicketComment[] }>(`ticket.json/${ticketId}`)
   const enriched = await resolveCategoryName(decodeTicket(raw['ticket-data']))
   return {
-    data: enriched,
+    data: { ...enriched, ...(await findListedFields(ticketId)) },
     comments: (raw['ticket-comments'] ?? []).map(decodeComment),
+  }
+}
+
+/** ticket.json lacks the customer fields; copy them from the open or closed list when the ticket is there. */
+async function findListedFields(ticketId: string): Promise<Partial<Ticket>> {
+  const open = await get<{ 'open-tickets': Ticket[] }>('open-tickets.json')
+  let listed = (open['open-tickets'] ?? []).find(t => t.ticket_id === ticketId)
+  if (!listed) {
+    const closed = await get<{ 'closed-tickets': Ticket[] }>('closed-tickets.json')
+    listed = (closed['closed-tickets'] ?? []).find(t => t.ticket_id === ticketId)
+  }
+  if (!listed) { return {} }
+  return {
+    user_name: listed.user_name,
+    user_email: listed.user_email,
+    envato_purchase_code: listed.envato_purchase_code,
+    envato_verified: parseEnvatoVerified(listed.envato_verified_string),
   }
 }
 

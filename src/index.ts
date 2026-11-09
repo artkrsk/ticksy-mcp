@@ -76,7 +76,7 @@ server.registerTool(
 server.registerTool(
   'get_ticket',
   {
-    description: 'Get a single ticket with its full comment thread.',
+    description: 'Get a single ticket with its full comment thread. When the ticket is in the open or recently closed list, data also carries the customer: user_name, user_email, envato_purchase_code and envato_verified (item, buyer, licence, supported_until).',
     inputSchema: TICKET_ID_SCHEMA,
   },
   async ({ ticket_id }) => run(() => getTicket(ticket_id)),
